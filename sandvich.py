@@ -240,8 +240,10 @@ class Formatter():
                     map(self.message_to_lines, messages)])
 
     def __repr__(self):
-        return map(format_message, self.messages)
-
+        output=[]
+        for formatted in map(format_message, self.messages):
+            output.extend(formatted)
+        return output
 
 
 class Sandvich():
