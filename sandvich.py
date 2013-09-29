@@ -181,7 +181,7 @@ class Formatter():
                 'format' : ''.join(["self.t.%s" % rule for rule in formats]),
                 'priority': priority}
     
-    def add_message(self, text):
+    def append(self, text):
         message = text.split(' ')
         rule = self.classify_message()
         self.messages.append({'text': message,
@@ -237,8 +237,7 @@ class Sandvich():
         self.term = Terminal()
         self.kh = KeyHandler()
         self.tf2d = TF2Daemon()
-        #TODO write a formatter class to replace this array
-        self.output = []
+        self.output = Formatter()
         self.command_stub = ""
         self.flags = []
 
@@ -286,9 +285,9 @@ class Sandvich():
         while len(self.flags[]):
             flag = self.flags.pop(0)
             if flag == self.REDRAW_OUTPUT:
-                for index in len(self.output):
-                    with term.location(0, index):
-                        print self.output[index]
+                with self.term.location():
+                    for line in self.output:
+                        print self.term.move_down + line
             elif flag == self.REDRAW_CMDLINE:
                 with term.location(0, term.height - 1):
                     print ' '.join([self.COMMAND_PROMPT, self.command_stub])
