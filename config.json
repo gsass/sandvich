@@ -1,0 +1,8 @@
+{'steam_dir': '/usr/games/steam',
+                'steamcmd_script': '/usr/games/steam/runscript_tf2.sh',
+                'console': '',
+                'game': 'tf',
+                'maxplayers': '18',
+                'autoupdate': ''
+}
+

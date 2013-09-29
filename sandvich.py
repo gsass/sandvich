@@ -7,15 +7,11 @@ import termios
 import sys
 import tty
 import re
+import json
 
 
-DEFAULT_ARGS = {'steam_dir': '/usr/games/steam',
-                'steamcmd_script': '/usr/games/steam/runscript_tf2.sh',
-                'console': None,
-                'game': 'tf',
-                'maxplayers': '18',
-                'autoupdate': None}
-
+with open(config.json) as config:
+    DEFAULT_ARGS = json.loads(config.read())
 
 class TF2Daemon():
     '''Wrapper for the TF2 Linux Server.  Allows a user to interact with a
@@ -196,10 +192,10 @@ class Formatter():
 
     def classify_message(self, message):
         text = ' '.join(message)
-        current_priority = 0
+        current_priority = 100
         matched_rule = None
         for alias, rule in self.rules.items():
-            if rule['priority'] > current_priority:
+            if rule['priority'] < current_priority:
                 match = rule['regex'].search(text)
                 if match:
                     matched_rule = alias
@@ -301,7 +297,7 @@ class Sandvich():
             if flag == self.REDRAW_OUTPUT:
                 with self.term.location():
                     for line in self.output:
-                        print self.term.move_down + line
+                        print line + self.term.move_down
             elif flag == self.REDRAW_CMDLINE:
                 with term.location(0, term.height - 1):
                     print ' '.join([self.COMMAND_PROMPT, self.command_stub])
@@ -309,6 +305,9 @@ class Sandvich():
     def teardown(self):
         self.kh.stop()
         self.term.exit_fullscreen()
+
+    def set_verbosity(self, verbosity):
+        self.output.set_verbosity(int(verbosity))
 
 
 if __name__ == '__main__':
