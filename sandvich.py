@@ -1,11 +1,12 @@
 from subprocess import Popen, PIPE
 from threading import Thread
 from blessings import Terminal
+from time import time
 import argparse
 import termios
 import sys
 import tty
-from time import time
+import re
 
 
 DEFAULT_ARGS = {'steam_dir': '/usr/games/steam',
@@ -174,25 +175,36 @@ class Formatter():
         self.rules = {}
         self.verbosity = 3
 
+    def set_verbosity(self, verbosity):
+        self.verbosity = verbosity
+
     def add_rule(self, alias, regex, formats, priority=5):
         if isinstance(formats, string):
             formats = (formats,)
-        self.rules[alias]={'regex' : regex,
+        self.rules[alias]={'regex' : re.compile(regex),
                 'format' : ''.join(["self.t.%s" % rule for rule in formats]),
                 'priority': priority}
     
     def append(self, text):
         message = text.split(' ')
         rule = self.classify_message()
-        self.messages.append({'text': message,
-                                'rule': rule})
-        while self.total_lines > self.t.height - 3:
-            self.messages.pop(0)
+        if not rule or self.rules[rule]['priority'] >= self.verbosity:
+            self.messages.append({'text': message,
+                                    'rule': rule})
+            while self.total_lines > self.t.height - 3:
+                self.messages.pop(0)
 
     def classify_message(self, message):
-        #TODO: use re on each word in the message to match rule(s)
-        #TODO: return the highest priority rule
-        return 'default'
+        text = ' '.join(message)
+        current_priority = 0
+        matched_rule = None
+        for alias, rule in self.rules.items():
+            if rule['priority'] > current_priority:
+                match = rule['regex'].search(text)
+                if match:
+                    matched_rule = alias
+                    current_priority = rule['prority']
+        return matched_rule
 
     def format_message(self, message):
         lines = self.message_to_lines(message['text'], return_lines = True)
