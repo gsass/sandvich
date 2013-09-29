@@ -16,7 +16,7 @@ DEFAULT_ARGS = {'steam_dir': '/usr/games/steam',
                 'autoupdate': None}
 
 
-class tf2_daemon():
+class TF2Daemon():
     '''Wrapper for the TF2 Linux Server.  Allows a user to interact with a
     running server instance (via stdin/stdio pipes) from Python.'''
     def __init__(self, run_time=5400, **kwargs):
@@ -167,11 +167,76 @@ class KeyHandler():
         self.running = False
 
 
+class Formatter():
+    def __init__(self, terminal):
+        self.messages=[]
+        self.t = terminal
+        self.rules = {}
+        self.verbosity = 3
+
+    def add_rule(self, alias, regex, formats, priority=5):
+        if isinstance(formats, string):
+            formats = (formats,)
+        self.rules[alias]={'regex' : regex,
+                'format' : ''.join(["self.t.%s" % rule for rule in formats]),
+                'priority': priority}
+    
+    def add_message(self, text):
+        message = text.split(' ')
+        rule = self.classify_message()
+        self.messages.append({'text': message,
+                                'rule': rule})
+        while self.total_lines > self.t.height - 3:
+            self.messages.pop(0)
+
+    def classify_message(self, message):
+        #TODO: use re on each word in the message to match rule(s)
+        #TODO: return the highest priority rule
+        return 'default'
+
+    def format_message(self, message):
+        lines = self.message_to_lines(message['text'], return_lines = True)
+        try:
+            formatted = []
+            for line in lines:
+                formatted.append(''.join([self.rules[message['rule'],
+                                        line,
+                                        self.t.normal]))
+            return formatted
+        except KeyError:
+            return lines
+
+    def message_to_lines(self, message, return_lines = False):
+        lines = []
+        current_line = ""
+        cursor = [1, 1]
+        for word in message:
+            cursor[0] += len(word) + 1
+            if cursor[0]  < self.t.width:
+                if return_lines:
+                    current_line = ' '.join([current_line, word])
+            else:
+                if return_lines:
+                    lines.append(current_line)
+                    current_line = word
+                cursor = [len(word) + 1, cursor[1] + 1]
+        return (cursor[1], lines)
+
+    def total_lines(self):
+        messages = [message['text'] for message in self.messages]
+        return sum([numlines for numlines, unused in 
+                    map(self.message_to_lines, messages)])
+
+    def __repr__(self):
+        return map(format_message, self.messages)
+
+
+
 class Sandvich():
     def __init__(self):
         self.term = Terminal()
         self.kh = KeyHandler()
-        self.tf2d = tf2daemon()
+        self.tf2d = TF2Daemon()
         #TODO write a formatter class to replace this array
         self.output = []
         self.command_stub = ""
