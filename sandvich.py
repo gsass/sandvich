@@ -218,7 +218,8 @@ class Formatter():
         try:
             lines = [''.join([self.get_format(message), line, self.t.normal])
                     for line in lines]
-        return lines
+        finally:
+			return lines
 
     def get_format(self, message):
         rule = self.rules[message['rule']]
@@ -303,7 +304,7 @@ class Sandvich():
 
     def redraw(self):
         '''Performs per-flag redraws of visual elements.'''
-        while len(self.flags[]):
+        while len(self.flags):
             flag = self.flags.pop(0)
             if flag == self.REDRAW_OUTPUT:
                 with self.term.location():
