@@ -13,6 +13,7 @@ import json
 with open(config.json) as config:
     DEFAULT_ARGS = json.loads(config.read())
 
+
 class TF2Daemon():
     '''Wrapper for the TF2 Linux Server.  Allows a user to interact with a
     running server instance (via stdin/stdio pipes) from Python.'''
@@ -31,6 +32,9 @@ class TF2Daemon():
         self.run_time = run_time
         self.starttime = None
         self.server = None
+
+    def set_run_time(self, time):
+        self.run_time = time
 
     def run(self):
         '''Runs the TF2 daemon in it's own subprocess.'''
@@ -107,6 +111,7 @@ class KeyHandler():
             return None
 
     def get_input_stub(self):
+        '''Wrapper for read(), useful for previewing user-entered commands.'''
         if self.mode == self.INPUT_MODE:
             return self.read()
         else:
@@ -165,8 +170,12 @@ class KeyHandler():
 
 
 class Formatter():
+    '''Text formatter for steaming output displayed in a Blessings
+    terminal.  Custom formatting can be added via regex-based rules, and
+    verbosity levels from 1 (priority/unclassified messages only) to 5
+    (most verbose) are supported.'''
     def __init__(self, terminal):
-        self.messages=[]
+        self.messages = []
         self.t = terminal
         self.rules = {}
         self.verbosity = 3
@@ -177,14 +186,15 @@ class Formatter():
     def add_rule(self, alias, regex, formats, priority=5):
         if isinstance(formats, string):
             formats = (formats,)
-        self.rules[alias]={'regex' : re.compile(regex),
-                'format' : ''.join(["self.t.%s" % rule for rule in formats]),
-                'priority': priority}
-    
+        self.rules[alias] = {'regex': re.compile(regex),
+                                'format': ''.join(["self.t.%s" % rule
+                                    for rule in formats]),
+                                'priority': priority}
+
     def append(self, text):
         message = text.split(' ')
         rule = self.classify_message()
-        if not rule or self.rules[rule]['priority'] >= self.verbosity:
+        if not rule or self.rules[rule]['priority'] <= self.verbosity:
             self.messages.append({'text': message,
                                     'rule': rule})
             while self.total_lines > self.t.height - 3:
@@ -196,6 +206,7 @@ class Formatter():
         matched_rule = None
         for alias, rule in self.rules.items():
             if rule['priority'] < current_priority:
+                #Only replace a rule if a higher priority rule exists.
                 match = rule['regex'].search(text)
                 if match:
                     matched_rule = alias
@@ -203,24 +214,23 @@ class Formatter():
         return matched_rule
 
     def format_message(self, message):
-        lines = self.message_to_lines(message['text'], return_lines = True)
+        lines = self.message_to_lines(message['text'], return_lines=True)
         try:
-            formatted = []
-            for line in lines:
-                formatted.append(''.join([self.rules[message['rule'],
-                                        line,
-                                        self.t.normal]))
-            return formatted
-        except KeyError:
-            return lines
+            lines = [''.join([self.get_format(message), line, self.t.normal])
+                    for line in lines]
+        return lines
 
-    def message_to_lines(self, message, return_lines = False):
+    def get_format(self, message):
+        rule = self.rules[message['rule']]
+        return rule['format']
+
+    def message_to_lines(self, message, return_lines=False):
         lines = []
         current_line = ""
         cursor = [1, 1]
         for word in message:
             cursor[0] += len(word) + 1
-            if cursor[0]  < self.t.width:
+            if cursor[0] < self.t.width:
                 if return_lines:
                     current_line = ' '.join([current_line, word])
             else:
@@ -232,17 +242,18 @@ class Formatter():
 
     def total_lines(self):
         messages = [message['text'] for message in self.messages]
-        return sum([numlines for numlines, unused in 
+        return sum([numlines for numlines, unused in
                     map(self.message_to_lines, messages)])
 
     def __repr__(self):
-        output=[]
-        for formatted in map(format_message, self.messages):
-            output.extend(formatted)
+        output = []
+        for message in self.messages:
+            output.extend(self.format_message(message))
         return output
 
 
 class Sandvich():
+    '''Full terminal application for controlling the TF2 server console.'''
     def __init__(self):
         self.term = Terminal()
         self.kh = KeyHandler()
