@@ -258,7 +258,7 @@ class Sandvich():
         self.term = Terminal()
         self.kh = KeyHandler()
         self.tf2d = TF2Daemon()
-        self.output = Formatter()
+        self.output = Formatter(self.term)
         self.command_stub = ""
         self.flags = []
 
