@@ -22,13 +22,12 @@ class TF2Daemon():
         run indefinitely.'''
         self.args = ['/usr/games/tf2_server/srcds_run']
         for key, value in DEFAULT_ARGS.items():
-            try:
+            if key in kwargs:
                 value = kwargs[key]
-            finally:
-                if value:
-                    self.args.extend((key, value))
-                else:
-                    self.args.append(key)
+            if value:
+                self.args.extend((key, value))
+            else:
+                self.args.append(key)
         self.run_time = run_time
         self.starttime = None
         self.server = None
