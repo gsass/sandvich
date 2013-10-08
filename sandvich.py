@@ -100,8 +100,11 @@ class KeyHandler():
     def append(self, ch):
         self.buf = ''.join([self.buf, ch])
 
-    def queue_command(self):
-        self.command_queue.append(self.flush())
+    def queue_command(self, cmd = None):
+        if not cmd:
+            self.command_queue.append(self.flush())
+        else:
+            self.command_queue.append(cmd)
 
     def read_command(self):
         if len(self.command_queue):
@@ -121,6 +124,9 @@ class KeyHandler():
         changes if necessary, and appending well-formed commands to the
         command queue.'''
         ch = self.getch()
+        if ch == "\x03":
+            self.flush()
+            self.queue_command('SIGINT')
         self.append(ch)
         if ch is not None:
             if self.mode == self.NORMAL_MODE:
@@ -192,7 +198,7 @@ class Formatter():
 
     def append(self, text):
         message = text.split(' ')
-        rule = self.classify_message()
+        rule = self.classify_message(message)
         if not rule or self.rules[rule]['priority'] <= self.verbosity:
             self.messages.append({'text': message,
                                     'rule': rule})
