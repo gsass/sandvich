@@ -21,7 +21,7 @@ class TF2Daemon():
         '''Sets up a Daemon to run for run_time seconds.  Set time to -1 to
         run indefinitely.'''
         self.args = ['/usr/games/tf2_server/srcds_run']
-        for key, value in DEFAULT_ARGS:
+        for key, value in DEFAULT_ARGS.items():
             try:
                 value = kwargs[key]
             finally:
