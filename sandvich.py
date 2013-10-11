@@ -167,6 +167,7 @@ class KeyHandler():
                 self.update()
 
         t = Thread(target=update_loop, args=(self,))
+        t.daemon = True
         t.start()
 
     def stop(self):
