@@ -286,6 +286,9 @@ class Sandvich():
     def update(self):
         '''Triggers user interaction with server, and screen redraw.'''
         command = self.kh.read_command()
+        if command == 'SIGINT':
+            #If a SIGINT has been sent, stop running and tear down.
+            return False
         running, output = self.tf2d.communicate(command)
         self.update_output(output)
         self.update_cmdline()
