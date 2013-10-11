@@ -202,7 +202,7 @@ class Formatter():
         if not rule or self.rules[rule]['priority'] <= self.verbosity:
             self.messages.append({'text': message,
                                     'rule': rule})
-            while self.total_lines > self.t.height - 3:
+            while self.total_lines() > self.t.height - 3:
                 self.messages.pop(0)
 
     def classify_message(self, message):
