@@ -280,7 +280,7 @@ class Sandvich():
         self.kh.run()
         running = True
         self.term.enter_fullscreen()
-        while running is True:
+        while running:
             running = self.update()
         self.teardown()
 
@@ -306,7 +306,7 @@ class Sandvich():
     def update_cmdline(self):
         '''Updates command box output and triggers a console redraw, if
         necessary.'''
-        new_stub = self.kh.get_command_stub()
+        new_stub = self.kh.get_input_stub()
         if new_stub != self.command_stub:
             self.command_stub = new_stub
             self.flags.append(self.REDRAW_CMDLINE)
