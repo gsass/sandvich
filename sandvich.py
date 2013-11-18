@@ -270,7 +270,7 @@ class Sandvich():
         self.flags = []
 
         self.COMMAND_PROMPT = ":^) --> "
-        self.REDRAW_OUPUT = 0
+        self.REDRAW_OUTPUT = 0
         self.REDRAW_CMDLINE = 1
 
     def run(self):
