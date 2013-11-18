@@ -220,12 +220,12 @@ class Formatter():
         return matched_rule
 
     def format_message(self, message):
-        lines = self.message_to_lines(message['text'], return_lines=True)
+        unused, lines = self.message_to_lines(message['text'], return_lines=True)
         try:
             lines = [''.join([self.get_format(message), line, self.t.normal])
                     for line in lines]
         finally:
-			return lines
+            return lines
 
     def get_format(self, message):
         rule = self.rules[message['rule']]
