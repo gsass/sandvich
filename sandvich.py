@@ -252,7 +252,7 @@ class Formatter():
         return sum([numlines for numlines, unused in
                     map(self.message_to_lines, messages)])
 
-    def __repr__(self):
+    def get_lines(self):
         output = []
         for message in self.messages:
             output.extend(self.format_message(message))
@@ -317,7 +317,7 @@ class Sandvich():
             flag = self.flags.pop(0)
             if flag == self.REDRAW_OUTPUT:
                 with self.term.location():
-                    for line in self.output:
+                    for line in self.output.get_lines():
                         print line + self.term.move_down
             elif flag == self.REDRAW_CMDLINE:
                 with term.location(0, term.height - 1):
