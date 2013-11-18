@@ -291,7 +291,7 @@ class Sandvich():
             #If a SIGINT has been sent, stop running and tear down.
             return False
         running, output = self.tf2d.communicate(command)
-        self.update_output(output)
+        self.update_output(self.output)
         self.update_cmdline()
         self.redraw()
         return running
