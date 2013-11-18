@@ -198,7 +198,7 @@ class Formatter():
                                 'priority': priority}
 
     def append(self, text):
-        message = text.split(' ')
+        message = text.split()
         rule = self.classify_message(message)
         if not rule or self.rules[rule]['priority'] <= self.verbosity:
             self.messages.append({'text': message,
@@ -290,11 +290,11 @@ class Sandvich():
         if command == 'SIGINT':
             #If a SIGINT has been sent, stop running and tear down.
             return False
-        running, output = self.tf2d.communicate(command)
-        self.update_output(self.output)
+        status, msg = self.tf2d.communicate(command)
+        self.update_output(msg)
         self.update_cmdline()
         self.redraw()
-        return running
+        return status
 
     def update_output(self, output):
         '''Updates console output and triggers a console redraw, if
